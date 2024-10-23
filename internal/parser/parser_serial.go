@@ -53,6 +53,7 @@ func (p *Parser) parseObject() *ObjectNode {
 		// Skip comments
 		if p.curToken.Type == lexer.TokenComment {
 			//pendingComments = append(pendingComments, p.curToken.Literal)
+			// todo handle comments！！！
 			p.nextToken()
 			continue
 		}
