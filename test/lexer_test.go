@@ -219,3 +219,42 @@ func TestLexer_JSONC(t *testing.T) {
 		}
 	}
 }
+
+// TestLexerSkipsComments tests that the lexer skips comments todo?
+func TestLexerSkipsComments(t *testing.T) {
+	input := `{
+        // This is a comment
+        name: 'ChatGPT',
+        /* Multi-line
+           comment */
+        age: 3
+    }`
+
+	l := lexer.NewLexer(input)
+	tokens := []lexer.Token{}
+	for tok := l.NextToken(); tok.Type != lexer.TokenEOF; tok = l.NextToken() {
+		tokens = append(tokens, tok)
+	}
+
+	expectedTokens := []lexer.Token{
+		{Type: lexer.TokenCurlyBraceOpen, Literal: "{"},
+		{Type: lexer.TokenInfinity, Literal: "name"},
+		{Type: lexer.TokenColon, Literal: ":"},
+		{Type: lexer.TokenString, Literal: "ChatGPT"},
+		{Type: lexer.TokenComma, Literal: ","},
+		{Type: lexer.TokenInfinity, Literal: "age"},
+		{Type: lexer.TokenColon, Literal: ":"},
+		{Type: lexer.TokenNumber, Literal: "3"},
+		{Type: lexer.TokenCurlyBraceClose, Literal: "}"},
+	}
+
+	if len(tokens) != len(expectedTokens) {
+		t.Fatalf("Expected %d tokens, got %d", len(expectedTokens), len(tokens))
+	}
+
+	for i, tok := range tokens {
+		if tok.Type != expectedTokens[i].Type || tok.Literal != expectedTokens[i].Literal {
+			t.Errorf("Token %d - expected (%v, %q), got (%v, %q)", i, expectedTokens[i].Type, expectedTokens[i].Literal, tok.Type, tok.Literal)
+		}
+	}
+}
