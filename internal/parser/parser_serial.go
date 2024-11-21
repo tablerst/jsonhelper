@@ -38,9 +38,19 @@ func (p *Parser) Parse() (JSONValue, error) {
 func (p *Parser) parseValue() (JSONValue, error) {
 	switch p.curToken.Type {
 	case lexer.LBRACE:
-		return p.parseObject()
+		value, err := p.parseObject()
+		if err != nil {
+			return nil, err
+		}
+		p.nextToken()
+		return value, nil
 	case lexer.LBRACKET:
-		return p.parseArray()
+		value, err := p.parseArray()
+		if err != nil {
+			return nil, err
+		}
+		p.nextToken()
+		return value, nil
 	case lexer.STRING:
 		value := p.curToken.Value
 		p.nextToken()
@@ -48,7 +58,6 @@ func (p *Parser) parseValue() (JSONValue, error) {
 	case lexer.NUMBER:
 		numberStr := p.curToken.Value
 		p.nextToken()
-		// 处理特殊值 NaN 和 Infinity
 		lowerStr := strings.ToLower(numberStr)
 		if lowerStr == "nan" {
 			return math.NaN(), nil
@@ -56,9 +65,22 @@ func (p *Parser) parseValue() (JSONValue, error) {
 			return math.Inf(1), nil
 		} else if lowerStr == "-infinity" {
 			return math.Inf(-1), nil
-		}
-
-		if strings.ContainsAny(numberStr, ".eE") {
+		} else if strings.HasPrefix(lowerStr, "0x") || strings.HasPrefix(lowerStr, "+0x") || strings.HasPrefix(lowerStr, "-0x") {
+			// 处理十六进制数字
+			prefixLen := 2
+			if strings.HasPrefix(lowerStr, "+") || strings.HasPrefix(lowerStr, "-") {
+				prefixLen = 3
+			}
+			i, err := strconv.ParseInt(numberStr[prefixLen:], 16, 64)
+			if err != nil {
+				return nil, err
+			}
+			if strings.HasPrefix(numberStr, "-") {
+				i = -i
+			}
+			return i, nil
+		} else if strings.HasPrefix(numberStr, ".") || strings.HasSuffix(numberStr, ".") || strings.ContainsAny(numberStr, ".eE") {
+			// 处理小数
 			f, err := strconv.ParseFloat(numberStr, 64)
 			if err != nil {
 				return nil, err
@@ -67,7 +89,12 @@ func (p *Parser) parseValue() (JSONValue, error) {
 		} else {
 			i, err := strconv.ParseInt(numberStr, 10, 64)
 			if err != nil {
-				return nil, err
+				// 尝试解析为浮点数
+				f, err := strconv.ParseFloat(numberStr, 64)
+				if err != nil {
+					return nil, err
+				}
+				return f, nil
 			}
 			return i, nil
 		}
@@ -78,12 +105,6 @@ func (p *Parser) parseValue() (JSONValue, error) {
 	case lexer.NULL:
 		p.nextToken()
 		return nil, nil
-	case lexer.NAN:
-		p.nextToken()
-		return "NaN", nil
-	case lexer.INFINITY:
-		p.nextToken()
-		return "Infinity", nil
 	default:
 		return nil, fmt.Errorf("unexpected token: %v", p.curToken)
 	}
@@ -92,8 +113,8 @@ func (p *Parser) parseValue() (JSONValue, error) {
 func (p *Parser) parseObject() (JSONObject, error) {
 	obj := make(JSONObject)
 	p.nextToken()
-	for p.curToken.Type != lexer.RBRACE {
-		if p.curToken.Type != lexer.STRING {
+	for p.curToken.Type != lexer.RBRACE && p.curToken.Type != lexer.EOF {
+		if p.curToken.Type != lexer.STRING && p.curToken.Type != lexer.IDENTIFIER {
 			return nil, fmt.Errorf("expected string key, got %v", p.curToken)
 		}
 		key := p.curToken.Value
@@ -111,18 +132,17 @@ func (p *Parser) parseObject() (JSONObject, error) {
 			p.nextToken()
 		} else if p.curToken.Type == lexer.RBRACE {
 			break
-		} else {
+		} else if p.curToken.Type != lexer.RBRACE && p.curToken.Type != lexer.EOF {
 			return nil, fmt.Errorf("expected comma or '}', got %v", p.curToken)
 		}
 	}
-	p.nextToken()
 	return obj, nil
 }
 
 func (p *Parser) parseArray() (JSONArray, error) {
 	array := make(JSONArray, 0)
 	p.nextToken()
-	for p.curToken.Type != lexer.RBRACKET {
+	for p.curToken.Type != lexer.RBRACKET && p.curToken.Type != lexer.EOF {
 		value, err := p.parseValue()
 		if err != nil {
 			return nil, err
@@ -132,10 +152,9 @@ func (p *Parser) parseArray() (JSONArray, error) {
 			p.nextToken()
 		} else if p.curToken.Type == lexer.RBRACKET {
 			break
-		} else {
+		} else if p.curToken.Type != lexer.RBRACKET && p.curToken.Type != lexer.EOF {
 			return nil, fmt.Errorf("expected comma or ']', got %v", p.curToken)
 		}
 	}
-	p.nextToken()
 	return array, nil
 }

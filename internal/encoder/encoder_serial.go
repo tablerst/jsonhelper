@@ -20,8 +20,8 @@ func encodeValue(value parser.JSONValue, pretty bool, indent int) (string, error
 		return encodeArray(v, pretty, indent)
 	case string:
 		return fmt.Sprintf("\"%s\"", escapeString(v)), nil
-	case int64:
-		return strconv.FormatInt(v, 10), nil
+	case int64, int:
+		return fmt.Sprintf("%d", v), nil
 	case float64:
 		if math.IsNaN(v) {
 			return "NaN", nil
@@ -48,11 +48,15 @@ func encodeValue(value parser.JSONValue, pretty bool, indent int) (string, error
 func encodeObject(obj parser.JSONObject, pretty bool, indent int) (string, error) {
 	var sb strings.Builder
 	sb.WriteString("{")
-	if pretty {
+	keys := make([]string, 0, len(obj))
+	for k := range obj {
+		keys = append(keys, k)
+	}
+	if pretty && len(keys) > 0 {
 		sb.WriteString("\n")
 	}
-	i := 0
-	for k, v := range obj {
+	for i, k := range keys {
+		v := obj[k]
 		if pretty {
 			sb.WriteString(strings.Repeat("  ", indent+1))
 		}
@@ -67,16 +71,14 @@ func encodeObject(obj parser.JSONObject, pretty bool, indent int) (string, error
 			return "", err
 		}
 		sb.WriteString(valStr)
-		i++
-		if i < len(obj) {
+		if i < len(keys)-1 {
 			sb.WriteString(",")
-			if pretty {
-				sb.WriteString("\n")
-			}
+		}
+		if pretty {
+			sb.WriteString("\n")
 		}
 	}
-	if pretty {
-		sb.WriteString("\n")
+	if pretty && len(keys) > 0 {
 		sb.WriteString(strings.Repeat("  ", indent))
 	}
 	sb.WriteString("}")
@@ -86,7 +88,7 @@ func encodeObject(obj parser.JSONObject, pretty bool, indent int) (string, error
 func encodeArray(array parser.JSONArray, pretty bool, indent int) (string, error) {
 	var sb strings.Builder
 	sb.WriteString("[")
-	if pretty {
+	if pretty && len(array) > 0 {
 		sb.WriteString("\n")
 	}
 	for i, v := range array {
@@ -100,13 +102,12 @@ func encodeArray(array parser.JSONArray, pretty bool, indent int) (string, error
 		sb.WriteString(valStr)
 		if i < len(array)-1 {
 			sb.WriteString(",")
-			if pretty {
-				sb.WriteString("\n")
-			}
+		}
+		if pretty {
+			sb.WriteString("\n")
 		}
 	}
-	if pretty {
-		sb.WriteString("\n")
+	if pretty && len(array) > 0 {
 		sb.WriteString(strings.Repeat("  ", indent))
 	}
 	sb.WriteString("]")
@@ -114,5 +115,26 @@ func encodeArray(array parser.JSONArray, pretty bool, indent int) (string, error
 }
 
 func escapeString(s string) string {
-	return strings.ReplaceAll(s, "\"", "\\\"")
+	var sb strings.Builder
+	for _, ch := range s {
+		switch ch {
+		case '\\':
+			sb.WriteString("\\\\")
+		case '"':
+			sb.WriteString("\\\"")
+		case '\b':
+			sb.WriteString("\\b")
+		case '\f':
+			sb.WriteString("\\f")
+		case '\n':
+			sb.WriteString("\\n")
+		case '\r':
+			sb.WriteString("\\r")
+		case '\t':
+			sb.WriteString("\\t")
+		default:
+			sb.WriteRune(ch)
+		}
+	}
+	return sb.String()
 }
