@@ -8,106 +8,117 @@ import (
 	"strings"
 )
 
-func Encode(value parser.JSONValue, pretty bool) (string, error) {
-	return encodeValue(value, pretty, 0)
+func Encode(node *parser.ASTNode, pretty bool) (string, error) {
+	return encodeNode(node, pretty, 0)
 }
-
-func encodeValue(value parser.JSONValue, pretty bool, indent int) (string, error) {
-	switch v := value.(type) {
-	case parser.JSONObject:
-		return encodeObject(v, pretty, indent)
-	case parser.JSONArray:
-		return encodeArray(v, pretty, indent)
-	case string:
-		return fmt.Sprintf("\"%s\"", escapeString(v)), nil
-	case int64, int:
-		return fmt.Sprintf("%d", v), nil
-	case float64:
-		if math.IsNaN(v) {
-			return "NaN", nil
-		} else if math.IsInf(v, 1) {
-			return "Infinity", nil
-		} else if math.IsInf(v, -1) {
-			return "-Infinity", nil
-		} else {
-			return strconv.FormatFloat(v, 'g', -1, 64), nil
-		}
-	case bool:
-		if v {
+func encodeNode(node *parser.ASTNode, pretty bool, indent int) (string, error) {
+	switch node.Type {
+	case parser.ObjectNode:
+		return encodeObject(node, pretty, indent)
+	case parser.ArrayNode:
+		return encodeArray(node, pretty, indent)
+	case parser.StringNode:
+		return fmt.Sprintf(`"%s"`, escapeString(fmt.Sprintf("%v", node.Value))), nil
+	case parser.NumberNode:
+		return formatNumber(node.Value)
+	case parser.BooleanNode:
+		if node.Value.(bool) {
 			return "true", nil
 		} else {
 			return "false", nil
 		}
-	case nil:
+	case parser.NullNode:
 		return "null", nil
+	case parser.CommentNode:
+		// simply ignore comment node at this stage
+		return "", nil
+	case "property":
+		if len(node.Children) > 0 {
+			return encodeNode(node.Children[0], pretty, indent)
+		}
+		return "", nil
 	default:
-		return "", fmt.Errorf("unsupported type: %T", value)
+		// handle identifier node in a easy way
+		return fmt.Sprintf("%v", node.Value), nil
 	}
 }
 
-func encodeObject(obj parser.JSONObject, pretty bool, indent int) (string, error) {
+func encodeObject(node *parser.ASTNode, pretty bool, indent int) (string, error) {
 	var sb strings.Builder
 	sb.WriteString("{")
-	keys := make([]string, 0, len(obj))
-	for k := range obj {
-		keys = append(keys, k)
-	}
-	if pretty && len(keys) > 0 {
+
+	children := node.Children
+	// property node list
+	if pretty && len(children) > 0 {
 		sb.WriteString("\n")
 	}
-	for i, k := range keys {
-		v := obj[k]
+
+	for i, child := range children {
+		if child.Type == parser.CommentNode {
+			continue
+		}
+		if child.Type != "property" {
+			continue
+		}
+		// key
+		keyStr := escapeString(child.Key)
 		if pretty {
 			sb.WriteString(strings.Repeat("  ", indent+1))
 		}
-		keyStr := fmt.Sprintf("\"%s\"", escapeString(k))
-		sb.WriteString(keyStr)
-		sb.WriteString(":")
+		sb.WriteString(fmt.Sprintf(`"%s":`, keyStr))
 		if pretty {
 			sb.WriteString(" ")
 		}
-		valStr, err := encodeValue(v, pretty, indent+1)
+		valStr, err := encodeNode(child, pretty, indent+1)
 		if err != nil {
 			return "", err
 		}
 		sb.WriteString(valStr)
-		if i < len(keys)-1 {
+
+		if i < len(children)-1 {
 			sb.WriteString(",")
 		}
 		if pretty {
 			sb.WriteString("\n")
 		}
 	}
-	if pretty && len(keys) > 0 {
+
+	if pretty && len(children) > 0 {
 		sb.WriteString(strings.Repeat("  ", indent))
 	}
 	sb.WriteString("}")
 	return sb.String(), nil
 }
 
-func encodeArray(array parser.JSONArray, pretty bool, indent int) (string, error) {
+func encodeArray(node *parser.ASTNode, pretty bool, indent int) (string, error) {
 	var sb strings.Builder
 	sb.WriteString("[")
-	if pretty && len(array) > 0 {
+
+	if pretty && len(node.Children) > 0 {
 		sb.WriteString("\n")
 	}
-	for i, v := range array {
+
+	for i, child := range node.Children {
+		if child.Type == parser.CommentNode {
+			continue
+		}
 		if pretty {
 			sb.WriteString(strings.Repeat("  ", indent+1))
 		}
-		valStr, err := encodeValue(v, pretty, indent+1)
+		valStr, err := encodeNode(child, pretty, indent+1)
 		if err != nil {
 			return "", err
 		}
 		sb.WriteString(valStr)
-		if i < len(array)-1 {
+		if i < len(node.Children)-1 {
 			sb.WriteString(",")
 		}
 		if pretty {
 			sb.WriteString("\n")
 		}
 	}
-	if pretty && len(array) > 0 {
+
+	if pretty && len(node.Children) > 0 {
 		sb.WriteString(strings.Repeat("  ", indent))
 	}
 	sb.WriteString("]")
@@ -137,4 +148,26 @@ func escapeString(s string) string {
 		}
 	}
 	return sb.String()
+}
+
+func formatNumber(val interface{}) (string, error) {
+	switch v := val.(type) {
+	case float64:
+		if math.IsNaN(v) {
+			return "NaN", nil
+		}
+		if math.IsInf(v, 1) {
+			return "Infinity", nil
+		}
+		if math.IsInf(v, -1) {
+			return "-Infinity", nil
+		}
+		return strconv.FormatFloat(v, 'g', -1, 64), nil
+	case int64:
+		return strconv.FormatInt(v, 10), nil
+	case int:
+		return strconv.Itoa(v), nil
+	default:
+		return "", fmt.Errorf("unsupported number type: %T", val)
+	}
 }

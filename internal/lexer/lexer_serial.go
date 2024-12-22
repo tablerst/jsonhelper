@@ -25,11 +25,16 @@ const (
 	COLON      // ':'
 	COMMA      // ','
 	IDENTIFIER // 未加引号的键名
+	COMMENT
 )
 
 type Token struct {
-	Type  TokenType
-	Value string
+	Type        TokenType
+	Value       string
+	StartOffset int
+	EndOffset   int
+	Line        int
+	Column      int
 }
 
 type Lexer struct {
@@ -37,12 +42,25 @@ type Lexer struct {
 	position     int  // 当前输入的位置
 	readPosition int  // 下一次读取的位置
 	ch           rune // 当前字符
+	line         int
+	column       int
 }
 
 func New(input string) *Lexer {
-	l := &Lexer{input: input}
+	l := &Lexer{input: input, line: 1, column: 0}
 	l.readChar()
 	return l
+}
+
+func (l *Lexer) newToken(t TokenType, val string, startOffset, startLine, startCol int) Token {
+	return Token{
+		Type:        t,
+		Value:       val,
+		StartOffset: startOffset,
+		EndOffset:   l.position,
+		Line:        startLine,
+		Column:      startCol,
+	}
 }
 
 func (l *Lexer) readChar() {
@@ -54,6 +72,13 @@ func (l *Lexer) readChar() {
 		l.position = l.readPosition
 		l.readPosition += width
 	}
+
+	if l.ch == '\n' {
+		l.line++
+		l.column = 0
+	} else {
+		l.column++
+	}
 }
 
 func (l *Lexer) NextToken() Token {
@@ -61,29 +86,33 @@ func (l *Lexer) NextToken() Token {
 
 	l.skipWhitespace()
 
+	startOffset := l.position
+	startLine := l.line
+	startCol := l.column
+
 	switch l.ch {
 	case '{':
-		tok = Token{Type: LBRACE, Value: string(l.ch)}
+		tok = l.newToken(LBRACE, string(l.ch), startOffset, startLine, startCol)
 		l.readChar()
 	case '}':
-		tok = Token{Type: RBRACE, Value: string(l.ch)}
+		tok = l.newToken(RBRACE, string(l.ch), startOffset, startLine, startCol)
 		l.readChar()
 	case '[':
-		tok = Token{Type: LBRACKET, Value: string(l.ch)}
+		tok = l.newToken(LBRACKET, string(l.ch), startOffset, startLine, startCol)
 		l.readChar()
 	case ']':
-		tok = Token{Type: RBRACKET, Value: string(l.ch)}
+		tok = l.newToken(RBRACKET, string(l.ch), startOffset, startLine, startCol)
 		l.readChar()
 	case ':':
-		tok = Token{Type: COLON, Value: string(l.ch)}
+		tok = l.newToken(COLON, string(l.ch), startOffset, startLine, startCol)
 		l.readChar()
 	case ',':
-		tok = Token{Type: COMMA, Value: string(l.ch)}
+		tok = l.newToken(COMMA, string(l.ch), startOffset, startLine, startCol)
 		l.readChar()
 	case '"', '\'':
-		tok = Token{Type: STRING, Value: l.readString(l.ch)}
+		tok = l.newToken(STRING, l.readString(l.ch), startOffset, startLine, startCol)
 	case 0:
-		tok = Token{Type: EOF, Value: ""}
+		tok = l.newToken(EOF, "", startOffset, startLine, startCol)
 	case '/', '#':
 		l.readComment()
 		return l.NextToken()
@@ -91,12 +120,12 @@ func (l *Lexer) NextToken() Token {
 		if isLetter(l.ch) {
 			identifier := l.readIdentifier()
 			tokType := lookupIdent(identifier)
-			tok = Token{Type: tokType, Value: identifier}
+			tok = l.newToken(tokType, identifier, startOffset, startLine, startCol)
 		} else if isDigit(l.ch) || l.ch == '-' || l.ch == '+' || l.ch == '.' {
 			number := l.readNumber()
-			tok = Token{Type: NUMBER, Value: number}
+			tok = l.newToken(NUMBER, number, startOffset, startLine, startCol)
 		} else {
-			tok = Token{Type: ERROR, Value: string(l.ch)}
+			tok = l.newToken(ERROR, string(l.ch), startOffset, startLine, startCol)
 			l.readChar()
 		}
 	}
