@@ -2,7 +2,7 @@
   "name": "json5helper-vscode",
   "displayName": "Json5helper",
   "description": "Preview JSON, JSONC, JSON5, and Python repr-like diagnostics as canonical JSON.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "publisher": "tablerst",
   "license": "MIT",
   "repository": {
@@ -17,22 +17,64 @@
     "Other"
   ],
   "activationEvents": [
-    "onCommand:json5helper.parsePreview"
+    "onCommand:json5helper.previewJson",
+    "onCommand:json5helper.previewJsonc",
+    "onCommand:json5helper.previewJson5",
+    "onCommand:json5helper.previewRepr"
   ],
   "main": "./dist/src/extension.js",
   "contributes": {
     "commands": [
       {
-        "command": "json5helper.parsePreview",
-        "title": "Json5helper: Parse Preview",
+        "command": "json5helper.previewJson",
+        "title": "Preview as JSON",
         "category": "Json5helper"
+      },
+      {
+        "command": "json5helper.previewJsonc",
+        "title": "Preview as JSONC",
+        "category": "Json5helper"
+      },
+      {
+        "command": "json5helper.previewJson5",
+        "title": "Preview as JSON5",
+        "category": "Json5helper"
+      },
+      {
+        "command": "json5helper.previewRepr",
+        "title": "Preview as Python repr",
+        "category": "Json5helper"
+      }
+    ],
+    "submenus": [
+      {
+        "id": "json5helper.parsePreviewMenu",
+        "label": "Json5helper: Parse Preview"
       }
     ],
     "menus": {
       "editor/context": [
         {
-          "command": "json5helper.parsePreview",
+          "submenu": "json5helper.parsePreviewMenu",
           "group": "navigation@90"
+        }
+      ],
+      "json5helper.parsePreviewMenu": [
+        {
+          "command": "json5helper.previewJson",
+          "group": "1_parse@10"
+        },
+        {
+          "command": "json5helper.previewJsonc",
+          "group": "1_parse@20"
+        },
+        {
+          "command": "json5helper.previewJson5",
+          "group": "1_parse@30"
+        },
+        {
+          "command": "json5helper.previewRepr",
+          "group": "2_diag@10"
         }
       ]
     }
@@ -47,7 +89,8 @@
     "build": "npm run build:wasm && npm run clean:dist && npm run compile",
     "vscode:prepublish": "npm run build",
     "package": "vsce package --out json5helper-vscode.vsix",
-    "install:local": "code --install-extension json5helper-vscode.vsix --force"
+    "install:local": "code --install-extension json5helper-vscode.vsix --force",
+    "install:local:insiders": "code-insiders --install-extension json5helper-vscode.vsix --force"
   },
   "dependencies": {},
   "devDependencies": {

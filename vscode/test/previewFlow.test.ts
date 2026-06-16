@@ -24,7 +24,6 @@ class RecordingBackend implements Json5helperBackend {
 }
 
 class RecordingServices implements ParsePreviewServices {
-  public mode: ParseMode | undefined = 'json5';
   public input: ParsePreviewInput | undefined = {
     selection: '',
     document: '{unquoted: true}'
@@ -32,10 +31,6 @@ class RecordingServices implements ParsePreviewServices {
   public previews: string[] = [];
   public errors: string[] = [];
   public logs: Array<{ title: string; message: string }> = [];
-
-  public async chooseMode(): Promise<ParseMode | undefined> {
-    return this.mode;
-  }
 
   public getInput(): ParsePreviewInput | undefined {
     return this.input;
@@ -70,7 +65,7 @@ async function run(): Promise<void> {
   const backend = new RecordingBackend();
   const services = new RecordingServices();
   services.input = { selection: '{selected: true}', document: '{document: true}' };
-  await parsePreview(backend, services);
+  await parsePreview('json5', backend, services);
 
   assert.deepEqual(backend.calls, [{ input: '{selected: true}', mode: 'json5' }]);
   assert.deepEqual(services.previews, ['{"ok":true}\n']);
@@ -79,15 +74,14 @@ async function run(): Promise<void> {
   const wholeDocumentBackend = new RecordingBackend();
   const wholeDocumentServices = new RecordingServices();
   wholeDocumentServices.input = { selection: '', document: '{document: true}' };
-  wholeDocumentServices.mode = 'jsonc';
-  await parsePreview(wholeDocumentBackend, wholeDocumentServices);
+  await parsePreview('jsonc', wholeDocumentBackend, wholeDocumentServices);
 
   assert.deepEqual(wholeDocumentBackend.calls, [{ input: '{document: true}', mode: 'jsonc' }]);
 
   const failingBackend = new RecordingBackend();
   failingBackend.error = new Error('bad syntax');
   const failingServices = new RecordingServices();
-  await parsePreview(failingBackend, failingServices);
+  await parsePreview('json5', failingBackend, failingServices);
 
   assert.deepEqual(failingServices.previews, []);
   assert.equal(failingServices.errors[0], 'Json5helper: parse preview failed. See output for details.');
@@ -96,7 +90,7 @@ async function run(): Promise<void> {
   const emptyBackend = new RecordingBackend();
   const emptyServices = new RecordingServices();
   emptyServices.input = { selection: '', document: '' };
-  await parsePreview(emptyBackend, emptyServices);
+  await parsePreview('repr', emptyBackend, emptyServices);
 
   assert.deepEqual(emptyBackend.calls, []);
   assert.equal(emptyServices.errors[0], 'Json5helper: selected text or document is empty.');

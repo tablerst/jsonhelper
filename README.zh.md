@@ -58,10 +58,12 @@ echo "AgentExecutor(verbose=True)" | json5helper repr-json
 
 1. 选中文本，或不选择文本以使用整个当前文档。
 2. 在编辑器里右键选择 `Json5helper: Parse Preview`。
-3. 在 Quick Pick 中选择 `Parse as JSON`、`Parse as JSONC`、`Parse as JSON5` 或 `Parse as Python repr`。
-4. 结果会在右侧打开为可编辑的 untitled JSON 文档。
+3. 在子菜单中选择 `Preview as JSON`、`Preview as JSONC`、`Preview as JSON5` 或 `Preview as Python repr`。
+4. 结果会在右侧 preview 面板中打开。
 
-命令面板中也可以运行 `Json5helper: Parse Preview`，这适合用来确认插件是否已经正常激活。
+插件不会修改源文档，也不会创建需要保存/丢弃的 untitled 文件。
+
+命令面板中也可以直接运行各个 `Json5helper` preview 命令，这适合用来确认插件是否已经正常激活。
 
 JSONC 和 JSON5 预览是有损转换：注释、单引号、未加引号的 key、尾逗号等源码层语法会被转换为 canonical JSON。
 
@@ -94,6 +96,14 @@ npm run package
 ```bash
 code --install-extension json5helper-vscode.vsix --force
 ```
+
+如果使用 VS Code Insiders：
+
+```bash
+code-insiders --install-extension json5helper-vscode.vsix --force
+```
+
+如果运行命令时只显示 "Activating Extensions..."，但没有出现 `Json5helper` output channel，先关闭旧的 Extension Development Host，或 reload 目标 VS Code 窗口。VS Code 在插件重新构建后仍可能继续运行旧的 extension host。
 
 ## 覆盖率目标
 

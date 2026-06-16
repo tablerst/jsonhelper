@@ -6,7 +6,6 @@ export type ParsePreviewInput = {
 };
 
 export type ParsePreviewServices = {
-  chooseMode(): Promise<ParseMode | undefined>;
   getInput(): ParsePreviewInput | undefined;
   openJsonPreview(content: string): Promise<void>;
   showError(message: string): void;
@@ -14,17 +13,13 @@ export type ParsePreviewServices = {
 };
 
 export async function parsePreview(
+  mode: ParseMode,
   backend: Json5helperBackend,
   services: ParsePreviewServices
 ): Promise<void> {
   const input = services.getInput();
   if (input === undefined) {
     services.showError('Json5helper: open a document before parsing.');
-    return;
-  }
-
-  const mode = await services.chooseMode();
-  if (mode === undefined) {
     return;
   }
 

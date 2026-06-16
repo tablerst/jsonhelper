@@ -1,34 +1,34 @@
-import * as path from 'node:path';
+import * as path from 'path';
 import * as vscode from 'vscode';
 
 import { Json5helperBackend, ParseMode, WasmJson5helperBackend } from './backend';
 import { ParsePreviewInput, ParsePreviewServices, parsePreview } from './previewFlow';
 
-type ParseChoice = {
-  label: string;
-  description: string;
+type ParseCommand = {
+  command: string;
   mode: ParseMode;
+  label: string;
 };
 
-const parseChoices: ReadonlyArray<ParseChoice> = [
+const parseCommands: ReadonlyArray<ParseCommand> = [
   {
-    label: 'Parse as JSON',
-    description: 'Preview strict JSON as canonical JSON',
+    command: 'json5helper.previewJson',
+    label: 'Preview as JSON',
     mode: 'json'
   },
   {
-    label: 'Parse as JSONC',
-    description: 'Preview JSON with comments as canonical JSON',
+    command: 'json5helper.previewJsonc',
+    label: 'Preview as JSONC',
     mode: 'jsonc'
   },
   {
-    label: 'Parse as JSON5',
-    description: 'Preview JSON5 as canonical JSON',
+    command: 'json5helper.previewJson5',
+    label: 'Preview as JSON5',
     mode: 'json5'
   },
   {
-    label: 'Parse as Python repr',
-    description: 'Preview repr-like diagnostics as JSON',
+    command: 'json5helper.previewRepr',
+    label: 'Preview as Python repr',
     mode: 'repr'
   }
 ];
@@ -38,19 +38,25 @@ let outputChannel: vscode.OutputChannel | undefined;
 export function activate(context: vscode.ExtensionContext): void {
   outputChannel = vscode.window.createOutputChannel('Json5helper');
   context.subscriptions.push(outputChannel);
-  outputChannel.appendLine(`[${new Date().toISOString()}] Json5helper extension activated`);
+  outputChannel.appendLine(`[${new Date().toISOString()}] Json5helper extension activating`);
 
   const backend = createBackend(context);
-  context.subscriptions.push(
-    vscode.commands.registerCommand('json5helper.parsePreview', async () => {
-      outputChannel?.appendLine(`[${new Date().toISOString()}] Json5helper: Parse Preview command invoked`);
-      await parsePreview(
-        backend,
-        createVsCodeParsePreviewServices(outputChannel!)
-      );
-    }
-    )
-  );
+  const previewPanel = new JsonPreviewPanel();
+
+  for (const command of parseCommands) {
+    context.subscriptions.push(
+      vscode.commands.registerCommand(command.command, async () => {
+        outputChannel?.appendLine(`[${new Date().toISOString()}] ${command.label} command invoked`);
+        await parsePreview(
+          command.mode,
+          backend,
+          createVsCodeParsePreviewServices(outputChannel!, previewPanel)
+        );
+      })
+    );
+  }
+
+  outputChannel.appendLine(`[${new Date().toISOString()}] Json5helper extension activated`);
 }
 
 export function deactivate(): void {
@@ -64,14 +70,11 @@ function createBackend(context: vscode.ExtensionContext): Json5helperBackend {
   );
 }
 
-function createVsCodeParsePreviewServices(channel: vscode.OutputChannel): ParsePreviewServices {
+function createVsCodeParsePreviewServices(
+  channel: vscode.OutputChannel,
+  previewPanel: JsonPreviewPanel
+): ParsePreviewServices {
   return {
-    async chooseMode(): Promise<ParseMode | undefined> {
-      const choice = await vscode.window.showQuickPick(parseChoices, {
-        placeHolder: 'Choose how to parse the current selection or document'
-      });
-      return choice?.mode;
-    },
     getInput(): ParsePreviewInput | undefined {
       const editor = vscode.window.activeTextEditor;
       if (editor === undefined) {
@@ -84,14 +87,7 @@ function createVsCodeParsePreviewServices(channel: vscode.OutputChannel): ParseP
       };
     },
     async openJsonPreview(content: string): Promise<void> {
-      const document = await vscode.workspace.openTextDocument({
-        content,
-        language: 'json'
-      });
-      await vscode.window.showTextDocument(document, {
-        preview: false,
-        viewColumn: vscode.ViewColumn.Beside
-      });
+      previewPanel.show(content);
     },
     showError(message: string): void {
       void vscode.window.showErrorMessage(message);
@@ -102,4 +98,61 @@ function createVsCodeParsePreviewServices(channel: vscode.OutputChannel): ParseP
       channel.appendLine('');
     }
   };
+}
+
+class JsonPreviewPanel {
+  private panel: vscode.WebviewPanel | undefined;
+
+  public show(content: string): void {
+    if (this.panel === undefined) {
+      this.panel = vscode.window.createWebviewPanel(
+        'json5helperPreview',
+        'Json5helper Preview',
+        vscode.ViewColumn.Beside,
+        {
+          enableScripts: false,
+          retainContextWhenHidden: true
+        }
+      );
+      this.panel.onDidDispose(() => {
+        this.panel = undefined;
+      });
+    } else {
+      this.panel.reveal(vscode.ViewColumn.Beside);
+    }
+
+    this.panel.webview.html = renderPreviewHtml(content);
+  }
+}
+
+function renderPreviewHtml(content: string): string {
+  return `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <style>
+    body {
+      margin: 0;
+      padding: 16px;
+      color: var(--vscode-editor-foreground);
+      background: var(--vscode-editor-background);
+      font-family: var(--vscode-editor-font-family);
+      font-size: var(--vscode-editor-font-size);
+    }
+    pre {
+      margin: 0;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+  </style>
+</head>
+<body><pre>${escapeHtml(content)}</pre></body>
+</html>`;
+}
+
+function escapeHtml(value: string): string {
+  return value
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;');
 }
