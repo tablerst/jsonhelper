@@ -65,6 +65,10 @@ Use it from the editor context menu:
 4. The result opens beside the current editor as an editable untitled JSON
    document.
 
+The command is also available from the Command Palette as
+`Json5helper: Parse Preview`, which is useful when checking whether the
+extension activated correctly.
+
 JSONC and JSON5 previews are intentionally lossy: comments, single quotes,
 unquoted keys, trailing commas, and other source-level syntax are converted into
 canonical JSON.

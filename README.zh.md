@@ -61,6 +61,8 @@ echo "AgentExecutor(verbose=True)" | json5helper repr-json
 3. 在 Quick Pick 中选择 `Parse as JSON`、`Parse as JSONC`、`Parse as JSON5` 或 `Parse as Python repr`。
 4. 结果会在右侧打开为可编辑的 untitled JSON 文档。
 
+命令面板中也可以运行 `Json5helper: Parse Preview`，这适合用来确认插件是否已经正常激活。
+
 JSONC 和 JSON5 预览是有损转换：注释、单引号、未加引号的 key、尾逗号等源码层语法会被转换为 canonical JSON。
 
 插件开发命令：

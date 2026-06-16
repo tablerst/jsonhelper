@@ -1,3 +1,4 @@
+import * as path from 'node:path';
 import * as vscode from 'vscode';
 
 import { Json5helperBackend, ParseMode, WasmJson5helperBackend } from './backend';
@@ -37,14 +38,17 @@ let outputChannel: vscode.OutputChannel | undefined;
 export function activate(context: vscode.ExtensionContext): void {
   outputChannel = vscode.window.createOutputChannel('Json5helper');
   context.subscriptions.push(outputChannel);
+  outputChannel.appendLine(`[${new Date().toISOString()}] Json5helper extension activated`);
 
-  const backend = createBackend();
+  const backend = createBackend(context);
   context.subscriptions.push(
-    vscode.commands.registerCommand('json5helper.parsePreview', () =>
-      parsePreview(
+    vscode.commands.registerCommand('json5helper.parsePreview', async () => {
+      outputChannel?.appendLine(`[${new Date().toISOString()}] Json5helper: Parse Preview command invoked`);
+      await parsePreview(
         backend,
         createVsCodeParsePreviewServices(outputChannel!)
-      )
+      );
+    }
     )
   );
 }
@@ -54,8 +58,10 @@ export function deactivate(): void {
   outputChannel = undefined;
 }
 
-function createBackend(): Json5helperBackend {
-  return new WasmJson5helperBackend(async () => require('../wasm/json5helper_wasm.js'));
+function createBackend(context: vscode.ExtensionContext): Json5helperBackend {
+  return new WasmJson5helperBackend(async () =>
+    require(path.join(context.extensionPath, 'wasm', 'json5helper_wasm.js'))
+  );
 }
 
 function createVsCodeParsePreviewServices(channel: vscode.OutputChannel): ParsePreviewServices {

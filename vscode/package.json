@@ -34,12 +34,6 @@
           "command": "json5helper.parsePreview",
           "group": "navigation@90"
         }
-      ],
-      "commandPalette": [
-        {
-          "command": "json5helper.parsePreview",
-          "when": "false"
-        }
       ]
     }
   },
