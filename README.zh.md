@@ -59,7 +59,7 @@ echo "AgentExecutor(verbose=True)" | json5helper repr-json
 1. 选中文本，或不选择文本以使用整个当前文档。
 2. 在编辑器里右键选择 `Json5helper: Parse Preview`。
 3. 在子菜单中选择 `Preview as JSON`、`Preview as JSONC`、`Preview as JSON5` 或 `Preview as Python repr`。
-4. 结果会在右侧 preview 面板中打开。
+4. 结果会在右侧以只读 JSON preview editor 打开，保留 VS Code 原生折叠和语法高亮能力。
 
 插件不会修改源文档，也不会创建需要保存/丢弃的 untitled 文件。
 

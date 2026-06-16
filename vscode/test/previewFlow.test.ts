@@ -44,6 +44,10 @@ class RecordingServices implements ParsePreviewServices {
     this.errors.push(message);
   }
 
+  public logInfo(message: string): void {
+    this.logs.push({ title: message, message: '' });
+  }
+
   public logError(title: string, message: string): void {
     this.logs.push({ title, message });
   }
@@ -70,6 +74,11 @@ async function run(): Promise<void> {
   assert.deepEqual(backend.calls, [{ input: '{selected: true}', mode: 'json5' }]);
   assert.deepEqual(services.previews, ['{"ok":true}\n']);
   assert.deepEqual(services.errors, []);
+  assert.deepEqual(services.logs.map((entry) => entry.title), [
+    'json5 parse preview started (16 source chars)',
+    'json5 parse preview parsed (11 output chars)',
+    'json5 parse preview opened'
+  ]);
 
   const wholeDocumentBackend = new RecordingBackend();
   const wholeDocumentServices = new RecordingServices();
@@ -85,7 +94,9 @@ async function run(): Promise<void> {
 
   assert.deepEqual(failingServices.previews, []);
   assert.equal(failingServices.errors[0], 'Json5helper: parse preview failed. See output for details.');
-  assert.equal(failingServices.logs[0].message, 'bad syntax');
+  const failureLog = failingServices.logs.find((entry) => entry.title === 'json5 parse preview failed');
+  assert.ok(failureLog);
+  assert.match(failureLog.message, /bad syntax/);
 
   const emptyBackend = new RecordingBackend();
   const emptyServices = new RecordingServices();

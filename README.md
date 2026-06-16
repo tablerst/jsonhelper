@@ -62,7 +62,8 @@ Use it from the editor context menu:
 2. Right-click and choose `Json5helper: Parse Preview`.
 3. Pick `Preview as JSON`, `Preview as JSONC`, `Preview as JSON5`, or
    `Preview as Python repr` from the submenu.
-4. The result opens beside the current editor in a preview panel.
+4. The result opens beside the current editor in a read-only JSON preview
+   editor with normal VS Code folding and syntax highlighting.
 
 The command is also available from the Command Palette as
 mode-specific `Json5helper` preview commands, which is useful when checking

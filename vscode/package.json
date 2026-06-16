@@ -17,10 +17,12 @@
     "Other"
   ],
   "activationEvents": [
+    "onStartupFinished",
     "onCommand:json5helper.previewJson",
     "onCommand:json5helper.previewJsonc",
     "onCommand:json5helper.previewJson5",
-    "onCommand:json5helper.previewRepr"
+    "onCommand:json5helper.previewRepr",
+    "onCommand:json5helper.openDiagnosticLog"
   ],
   "main": "./dist/src/extension.js",
   "contributes": {
@@ -43,6 +45,11 @@
       {
         "command": "json5helper.previewRepr",
         "title": "Preview as Python repr",
+        "category": "Json5helper"
+      },
+      {
+        "command": "json5helper.openDiagnosticLog",
+        "title": "Open Diagnostic Log",
         "category": "Json5helper"
       }
     ],
