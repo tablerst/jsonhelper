@@ -1,0 +1,55 @@
+{
+  "name": "json5helper-vscode",
+  "displayName": "Json5helper",
+  "description": "Preview JSON, JSONC, JSON5, and Python repr-like diagnostics as canonical JSON.",
+  "version": "0.1.0",
+  "publisher": "tablerst",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.96.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onCommand:json5helper.parsePreview"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "json5helper.parsePreview",
+        "title": "Json5helper: Parse Preview",
+        "category": "Json5helper"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "json5helper.parsePreview",
+          "group": "navigation@90"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "json5helper.parsePreview",
+          "when": "false"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "test": "npm run compile && node ./dist/test/previewFlow.test.js",
+    "clean:wasm": "node -e \"require('fs').rmSync('wasm',{recursive:true,force:true})\"",
+    "build:wasm": "npm run clean:wasm && cargo build -p json5helper-wasm --target wasm32-unknown-unknown --release && wasm-bindgen ../target/wasm32-unknown-unknown/release/json5helper_wasm.wasm --target nodejs --out-dir ./wasm --out-name json5helper_wasm",
+    "build": "npm run build:wasm && npm run compile"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@types/node": "^25.9.3",
+    "@types/vscode": "1.96.0",
+    "typescript": "^6.0.3"
+  }
+}

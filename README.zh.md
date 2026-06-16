@@ -2,23 +2,26 @@
 
 `json5helper` 正在从早期 Go 原型迁移为 Rust workspace，用于解析和格式化 JSON 系列配置格式。
 
-当前 Rust 实现目标：
+当前 Rust 实现覆盖：
 
-- 解析 JSON、JSONC、JSON5，并转换为 `serde_json::Value`
-- 输出紧凑 JSON 或美化后的 JSON
+- 将 JSON、JSONC、JSON5 解析为 `serde_json::Value`
+- 输出紧凑 JSON 或 pretty JSON
 - 提供 `json5helper` CLI 二进制命令
-- 额外提供 Python `repr` 风格对象图到诊断 JSON 的有损转换
-- 后续支持 WASI 构建，供编辑器集成使用
+- 提供 VS Code 右键解析预览插件
+- 将 Python `repr` 风格对象图转换为有损诊断 JSON
+- 提供供编辑器集成使用的 WebAssembly 包装层
 
-原 Go 代码仍保留在仓库中作为历史参考，主要位于 `internal/`、`pkg/`、`test/` 和 `jsonhelper.go`。
+旧 Go 实现仍保留在仓库中作为历史参考，主要位于 `internal/`、`pkg/`、`test/` 和 `jsonhelper.go`。
 
-## Workspace 结构
+## Workspace
 
 ```text
 crates/
-  json5helper-core/   # JSON、JSONC、JSON5 的解析与格式化 API
+  json5helper-core/   # JSON、JSONC、JSON5 解析与格式化 API
   json5helper-cli/    # CLI 二进制入口
+  json5helper-wasm/   # 编辑器集成用 WebAssembly 包装层
   repr-json/          # Python repr-like 文本转诊断 JSON
+vscode/               # VS Code 插件包
 ```
 
 ## 常用命令
@@ -29,7 +32,7 @@ cargo fmt --all
 cargo clippy --workspace --all-targets
 ```
 
-格式化 JSON5 文件：
+解析并格式化 JSON5：
 
 ```bash
 json5helper fmt --syntax json5 example.json5
@@ -47,14 +50,44 @@ echo "{unquoted: 'value', trailing: [1, 2,]}" | json5helper fmt --syntax json5
 echo "AgentExecutor(verbose=True)" | json5helper repr-json
 ```
 
+## VS Code 插件
+
+`vscode/` 包提供显式的右键解析预览工作流，而不是自动 formatter。插件不会注册 Format Document，不会在保存时运行，也不会修改源文档。
+
+使用方式：
+
+1. 选中文本，或不选择文本以使用整个当前文档。
+2. 在编辑器里右键选择 `Json5helper: Parse Preview`。
+3. 在 Quick Pick 中选择 `Parse as JSON`、`Parse as JSONC`、`Parse as JSON5` 或 `Parse as Python repr`。
+4. 结果会在右侧打开为可编辑的 untitled JSON 文档。
+
+JSONC 和 JSON5 预览是有损转换：注释、单引号、未加引号的 key、尾逗号等源码层语法会被转换为 canonical JSON。
+
+插件开发命令：
+
+```bash
+cd vscode
+npm install
+npm run build
+```
+
+从仓库根目录可以直接使用 VS Code launch 配置 `Run Json5helper VS Code Extension`，它会先构建插件，再打开 Extension Development Host。
+
+`npm run build` 会构建 Rust WebAssembly 包装层并编译 TypeScript 插件。必要时先安装一次性前置工具：
+
+```bash
+rustup target add wasm32-unknown-unknown
+cargo install wasm-bindgen-cli --version 0.2.125 --locked
+```
+
 ## 覆盖率目标
 
-Rust 实现的目标是至少 80% 行覆盖率。安装 `cargo-llvm-cov` 后可运行：
+Rust 实现目标是至少 80% 行覆盖率。安装 `cargo-llvm-cov` 后可运行：
 
 ```bash
 cargo llvm-cov --workspace --fail-under-lines 80
 ```
 
-## WASI
+## WebAssembly
 
-核心解析逻辑放在 `json5helper-core`，避免绑定文件系统，后续可以包装为 `wasm32-wasip2` 目标或供 VS Code 插件调用。VS Code 插件本身暂未在本仓库实现。
+核心解析逻辑放在 `json5helper-core`，避免绑定文件系统。当前 VS Code 插件使用内置的 `wasm-bindgen` 后端，因此用户不需要安装 Rust、`json5helper` CLI 或 `wasmtime`。
