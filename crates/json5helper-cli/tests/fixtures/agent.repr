@@ -1,0 +1,28 @@
+AgentExecutor(
+  verbose=True,
+  max_iterations=3,
+  agent=RunnableMultiActionAgent(
+    runnable=RunnableAssign(
+      mapper={
+        agent_scratchpad: RunnableLambda(lambda x: message_formatter(x['intermediate_steps'])),
+        config: FieldInfo(annotation=None, required=True),
+      }
+    ) | ChatPromptTemplate(
+      input_variables=['input', 'system_prompt'],
+      optional_variables=['agent_scratchpad', 'chat_history'],
+      messages=[
+        SystemMessagePromptTemplate(prompt=PromptTemplate(template='{system_prompt}')),
+        MessagesPlaceholder(variable_name='chat_history', optional=True),
+        HumanMessagePromptTemplate(prompt=PromptTemplate(template='{input}')),
+      ],
+    ),
+    output_parser=ToolsAgentOutputParser(),
+  ),
+  callbacks=[Tag(tag='debug'), Tag(tag='baseline')],
+  metadata={
+    source: 'fixture',
+    enabled: True,
+    retry: None,
+    function: <function _get_type at 0x0000025FFE70A0E0>,
+  },
+)

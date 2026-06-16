@@ -393,4 +393,72 @@ mod tests {
         assert_eq!(value["flags"][2], Value::Null);
         assert_eq!(value["count"], 3);
     }
+
+    #[test]
+    fn parses_positional_args_tuple_numbers_and_angle_repr() {
+        let value =
+            parse_repr("Thing('line\\ntext', -3, 1.25e2, (<function _get_type at 0xabc>,))")
+                .unwrap();
+
+        assert_eq!(value["$type"], "Thing");
+        assert_eq!(value["$args"][0], "line\ntext");
+        assert_eq!(value["$args"][1], -3);
+        assert_eq!(value["$args"][2], 125.0);
+        assert_eq!(value["$args"][3][0], "<function _get_type at 0xabc>");
+    }
+
+    #[test]
+    fn parses_string_assignment_keys_and_identifiers() {
+        let value = parse_repr("FieldInfo('annotation'=None, mode=test.mode)").unwrap();
+
+        assert_eq!(value["$type"], "FieldInfo");
+        assert_eq!(value["annotation"], Value::Null);
+        assert_eq!(value["mode"], "test.mode");
+    }
+
+    #[test]
+    fn reports_trailing_input() {
+        let err = parse_repr("AgentExecutor() trailing").unwrap_err();
+
+        assert_eq!(
+            err,
+            Error::UnexpectedToken {
+                position: 16,
+                message: "expected end of input".to_string()
+            }
+        );
+    }
+
+    #[test]
+    fn reports_missing_identifier_in_map() {
+        let err = parse_repr("{: 1}").unwrap_err();
+
+        assert!(matches!(
+            err,
+            Error::UnexpectedToken {
+                message,
+                ..
+            } if message == "expected identifier"
+        ));
+    }
+
+    #[test]
+    fn reports_unterminated_string() {
+        let err = parse_repr("'unterminated").unwrap_err();
+
+        assert_eq!(err, Error::UnexpectedEof);
+    }
+
+    #[test]
+    fn reports_bad_number() {
+        let err = parse_repr("-").unwrap_err();
+
+        assert!(matches!(
+            err,
+            Error::UnexpectedToken {
+                message,
+                ..
+            } if message == "invalid number"
+        ));
+    }
 }

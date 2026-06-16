@@ -72,21 +72,29 @@ fn main() -> Result<()> {
 
 fn run_json(command: JsonCommand) -> Result<()> {
     let input = read_input(command.input.as_ref())?;
-    let output = json5helper_core::format(&input, command.syntax.into(), !command.compact)?;
+    let output = format_json_text(&input, command.syntax, command.compact)?;
     println!("{output}");
     Ok(())
 }
 
 fn run_repr(command: ReprCommand) -> Result<()> {
     let input = read_input(command.input.as_ref())?;
-    let value = repr_json::parse_repr(&input)?;
-    let output = if command.compact {
+    let output = format_repr_text(&input, command.compact)?;
+    println!("{output}");
+    Ok(())
+}
+
+fn format_json_text(input: &str, syntax: CliSyntax, compact: bool) -> Result<String> {
+    Ok(json5helper_core::format(input, syntax.into(), !compact)?)
+}
+
+fn format_repr_text(input: &str, compact: bool) -> Result<String> {
+    let value = repr_json::parse_repr(input)?;
+    Ok(if compact {
         serde_json::to_string(&value)?
     } else {
         serde_json::to_string_pretty(&value)?
-    };
-    println!("{output}");
-    Ok(())
+    })
 }
 
 fn read_input(path: Option<&PathBuf>) -> Result<String> {
@@ -101,5 +109,51 @@ fn read_input(path: Option<&PathBuf>) -> Result<String> {
             bail!("no input provided; pass a file path or pipe text on stdin");
         }
         Ok(input)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn maps_cli_syntax_to_core_syntax() {
+        assert_eq!(Syntax::from(CliSyntax::Json), Syntax::Json);
+        assert_eq!(Syntax::from(CliSyntax::Jsonc), Syntax::Jsonc);
+        assert_eq!(Syntax::from(CliSyntax::Json5), Syntax::Json5);
+    }
+
+    #[test]
+    fn formats_json5_compact() {
+        let output = format_json_text(
+            "{unquoted: 'value', trailing: [1, 2,]}",
+            CliSyntax::Json5,
+            true,
+        )
+        .unwrap();
+
+        assert_eq!(output, r#"{"trailing":[1,2],"unquoted":"value"}"#);
+    }
+
+    #[test]
+    fn formats_jsonc_pretty() {
+        let output =
+            format_json_text(r#"{"value":1,}// comment"#, CliSyntax::Jsonc, false).unwrap();
+
+        assert!(output.contains("\n  \"value\": 1\n"));
+    }
+
+    #[test]
+    fn formats_repr_compact() {
+        let output = format_repr_text("AgentExecutor(verbose=True)", true).unwrap();
+
+        assert_eq!(output, r#"{"$type":"AgentExecutor","verbose":true}"#);
+    }
+
+    #[test]
+    fn formats_repr_pretty() {
+        let output = format_repr_text("AgentExecutor(verbose=True)", false).unwrap();
+
+        assert!(output.contains("\n  \"verbose\": true\n"));
     }
 }

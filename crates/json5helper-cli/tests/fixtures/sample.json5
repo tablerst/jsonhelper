@@ -1,0 +1,27 @@
+{
+  // JSON5 baseline: comments, unquoted keys, single quotes, trailing commas,
+  // hex numbers, explicit plus signs, decimals, escapes, and nested values.
+  metadata: {
+    name: 'json5helper',
+    enabled: true,
+    version: +1,
+    hexadecimal: 0xdecaf,
+    ratio: .75,
+    max: 8675309.,
+  },
+  paths: [
+    'C:\\Users\\demo\\settings.json5',
+    'line\\nbreak',
+  ],
+  features: {
+    comments: 'line and block',
+    trailingComma: ['objects', 'arrays',],
+    unicode: '雪',
+  },
+  nested: {
+    array: [
+      {id: 1, label: 'first',},
+      {id: 2, label: 'second',},
+    ],
+  },
+}

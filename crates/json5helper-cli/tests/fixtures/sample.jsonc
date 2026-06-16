@@ -1,0 +1,22 @@
+{
+  // JSONC baseline keeps strict JSON keys but allows comments and trailing commas.
+  "name": "jsonc",
+  "settings": {
+    "enabled": true,
+    "threshold": 3.5,
+    "paths": [
+      "src/main.rs",
+      "crates/json5helper-core/src/lib.rs",
+    ],
+  },
+  "items": [
+    {
+      "id": 1,
+      "tags": ["json", "jsonc"],
+    },
+    {
+      "id": 2,
+      "tags": [],
+    },
+  ],
+}
