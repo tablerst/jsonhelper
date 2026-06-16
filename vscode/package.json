@@ -5,6 +5,11 @@
   "version": "0.1.0",
   "publisher": "tablerst",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tablerst/jsonhelper.git",
+    "directory": "vscode"
+  },
   "engines": {
     "vscode": "^1.96.0"
   },
@@ -14,7 +19,7 @@
   "activationEvents": [
     "onCommand:json5helper.parsePreview"
   ],
-  "main": "./dist/extension.js",
+  "main": "./dist/src/extension.js",
   "contributes": {
     "commands": [
       {
@@ -42,14 +47,19 @@
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
     "test": "npm run compile && node ./dist/test/previewFlow.test.js",
+    "clean:dist": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\"",
     "clean:wasm": "node -e \"require('fs').rmSync('wasm',{recursive:true,force:true})\"",
     "build:wasm": "npm run clean:wasm && cargo build -p json5helper-wasm --target wasm32-unknown-unknown --release && wasm-bindgen ../target/wasm32-unknown-unknown/release/json5helper_wasm.wasm --target nodejs --out-dir ./wasm --out-name json5helper_wasm",
-    "build": "npm run build:wasm && npm run compile"
+    "build": "npm run build:wasm && npm run clean:dist && npm run compile",
+    "vscode:prepublish": "npm run build",
+    "package": "vsce package --out json5helper-vscode.vsix",
+    "install:local": "code --install-extension json5helper-vscode.vsix --force"
   },
   "dependencies": {},
   "devDependencies": {
     "@types/node": "^25.9.3",
     "@types/vscode": "1.96.0",
+    "@vscode/vsce": "^3.9.2",
     "typescript": "^6.0.3"
   }
 }

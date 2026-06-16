@@ -71,13 +71,26 @@ npm install
 npm run build
 ```
 
-从仓库根目录可以直接使用 VS Code launch 配置 `Run Json5helper VS Code Extension`，它会先构建插件，再打开 Extension Development Host。
+从仓库根目录可以直接使用 VS Code launch 配置 `Run Json5helper VS Code Extension`，它会先构建插件，再打开 Extension Development Host。默认配置保留普通 extension-host 环境，方便观察兼容性问题。如果其他已安装扩展污染日志或干扰调试，可以改用 `Run Json5helper VS Code Extension (Isolated)`；该配置会禁用其他扩展，并把临时 VS Code 状态放在 `.vscode-dev/` 下。
 
 `npm run build` 会构建 Rust WebAssembly 包装层并编译 TypeScript 插件。必要时先安装一次性前置工具：
 
 ```bash
 rustup target add wasm32-unknown-unknown
 cargo install wasm-bindgen-cli --version 0.2.125 --locked
+```
+
+打包插件并同步到其他 PC：
+
+```bash
+cd vscode
+npm run package
+```
+
+该命令会生成 `vscode/json5helper-vscode.vsix`。把这个文件复制到其他 PC 后，可以在 VS Code 中运行 `Extensions: Install from VSIX...` 安装，或使用命令：
+
+```bash
+code --install-extension json5helper-vscode.vsix --force
 ```
 
 ## 覆盖率目标

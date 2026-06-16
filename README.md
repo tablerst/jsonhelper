@@ -79,7 +79,11 @@ npm run build
 
 From the repository root, use the VS Code launch configuration
 `Run Json5helper VS Code Extension` to build the extension and open an Extension
-Development Host.
+Development Host. This default launch keeps the normal extension-host
+environment so compatibility issues remain visible. If unrelated installed
+extensions pollute the logs or make debugging noisy, use
+`Run Json5helper VS Code Extension (Isolated)` instead; that profile disables
+other extensions and stores its temporary VS Code state under `.vscode-dev/`.
 
 `npm run build` compiles the Rust WebAssembly wrapper and the TypeScript
 extension. Install these one-time prerequisites when needed:
@@ -87,6 +91,20 @@ extension. Install these one-time prerequisites when needed:
 ```bash
 rustup target add wasm32-unknown-unknown
 cargo install wasm-bindgen-cli --version 0.2.125 --locked
+```
+
+To package the extension for another PC:
+
+```bash
+cd vscode
+npm run package
+```
+
+This creates `vscode/json5helper-vscode.vsix`. Copy that file to the other PC
+and install it with VS Code's `Extensions: Install from VSIX...` command, or:
+
+```bash
+code --install-extension json5helper-vscode.vsix --force
 ```
 
 ## Coverage Goal

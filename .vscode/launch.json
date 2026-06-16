@@ -12,6 +12,21 @@
         "${workspaceFolder}/vscode/dist/**/*.js"
       ],
       "preLaunchTask": "vscode: build extension"
+    },
+    {
+      "name": "Run Json5helper VS Code Extension (Isolated)",
+      "type": "extensionHost",
+      "request": "launch",
+      "args": [
+        "--extensionDevelopmentPath=${workspaceFolder}/vscode",
+        "--disable-extensions",
+        "--user-data-dir=${workspaceFolder}/.vscode-dev/user-data",
+        "--extensions-dir=${workspaceFolder}/.vscode-dev/extensions"
+      ],
+      "outFiles": [
+        "${workspaceFolder}/vscode/dist/**/*.js"
+      ],
+      "preLaunchTask": "vscode: build extension"
     }
   ]
 }
