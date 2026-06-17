@@ -5,10 +5,27 @@
   "version": "0.1.0",
   "publisher": "tablerst",
   "license": "MIT",
+  "icon": "assets/icon.png",
+  "keywords": [
+    "json",
+    "jsonc",
+    "json5",
+    "repr",
+    "preview",
+    "parser"
+  ],
+  "galleryBanner": {
+    "color": "#111827",
+    "theme": "dark"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/tablerst/ParseLens.git",
     "directory": "vscode"
+  },
+  "homepage": "https://github.com/tablerst/ParseLens#readme",
+  "bugs": {
+    "url": "https://github.com/tablerst/ParseLens/issues"
   },
   "engines": {
     "vscode": "^1.96.0"

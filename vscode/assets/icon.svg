@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128" role="img" aria-label="ParseLens">
+  <rect x="8" y="8" width="112" height="112" rx="24" fill="#111827"/>
+  <rect x="8.75" y="8.75" width="110.5" height="110.5" rx="23.25" fill="none" stroke="#334155" stroke-width="1.5"/>
+  <path d="M36 40h-5c-5 0-8 3-8 8v12c0 5-2 8-6 8 4 0 6 3 6 8v12c0 5 3 8 8 8h5" fill="none" stroke="#94a3b8" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M92 40h5c5 0 8 3 8 8v12c0 5 2 8 6 8-4 0-6 3-6 8v12c0 5-3 8-8 8h-5" fill="none" stroke="#94a3b8" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="61" cy="58" r="24" fill="#0f172a" stroke="#38bdf8" stroke-width="8"/>
+  <path d="M79 76l25 25" fill="none" stroke="#2dd4bf" stroke-width="10" stroke-linecap="round"/>
+  <circle cx="61" cy="58" r="10" fill="#2dd4bf"/>
+  <circle cx="48" cy="47" r="4" fill="#e0f2fe" opacity=".9"/>
+</svg>
