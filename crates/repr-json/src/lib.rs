@@ -79,9 +79,34 @@ impl<'a> Parser<'a> {
         self.skip_ws();
         if self.consume('(') {
             self.parse_call(name)
+        } else if self.peek_char() == Some('[') {
+            self.parse_subscripted_identifier(name)
         } else {
             Ok(Value::String(name))
         }
+    }
+
+    fn parse_subscripted_identifier(&mut self, name: String) -> Result<Value> {
+        let mut value = json!({
+            "$type": name,
+        });
+        while self.peek_char() == Some('[') {
+            let subscript = self.parse_sequence('[', ']')?;
+            if let Value::Object(object) = &mut value {
+                if object.contains_key("$subscript") {
+                    let previous = std::mem::replace(&mut value, Value::Null);
+                    value = json!({
+                        "$type": "$subscript",
+                        "value": previous,
+                        "$subscript": subscript,
+                    });
+                } else {
+                    object.insert("$subscript".to_string(), subscript);
+                }
+            }
+            self.skip_ws();
+        }
+        Ok(value)
     }
 
     fn parse_call(&mut self, name: String) -> Result<Value> {
@@ -274,9 +299,17 @@ impl<'a> Parser<'a> {
 
     fn parse_angle_repr(&mut self) -> String {
         let start = self.pos;
+        let mut depth = 0usize;
         while let Some(ch) = self.next_char() {
-            if ch == '>' {
-                break;
+            match ch {
+                '<' => depth += 1,
+                '>' => {
+                    depth = depth.saturating_sub(1);
+                    if depth == 0 {
+                        break;
+                    }
+                }
+                _ => {}
             }
         }
         self.input[start..self.pos].to_string()
@@ -408,12 +441,46 @@ mod tests {
     }
 
     #[test]
+    fn preserves_nested_angle_repr() {
+        let value =
+            parse_repr("Tool(coroutine=<function decorator.<locals>.async_wrapper at 0xabc>)")
+                .unwrap();
+
+        assert_eq!(value["$type"], "Tool");
+        assert_eq!(
+            value["coroutine"],
+            "<function decorator.<locals>.async_wrapper at 0xabc>"
+        );
+    }
+
+    #[test]
     fn parses_string_assignment_keys_and_identifiers() {
         let value = parse_repr("FieldInfo('annotation'=None, mode=test.mode)").unwrap();
 
         assert_eq!(value["$type"], "FieldInfo");
         assert_eq!(value["annotation"], Value::Null);
         assert_eq!(value["mode"], "test.mode");
+    }
+
+    #[test]
+    fn parses_python_typing_subscripts_as_json() {
+        let value = parse_repr(
+            "Prompt(input_types={'chat_history': list[typing.Annotated[typing.Union[typing.Annotated[langchain_core.messages.ai.AIMessage, Tag(tag='ai')]], FieldInfo(annotation=NoneType, required=True)]]})",
+        )
+        .unwrap();
+
+        assert_eq!(value["$type"], "Prompt");
+        let chat_history = &value["input_types"]["chat_history"];
+        assert_eq!(chat_history["$type"], "list");
+        assert_eq!(chat_history["$subscript"][0]["$type"], "typing.Annotated");
+        assert_eq!(
+            chat_history["$subscript"][0]["$subscript"][0]["$type"],
+            "typing.Union"
+        );
+        assert_eq!(
+            chat_history["$subscript"][0]["$subscript"][1]["$type"],
+            "FieldInfo"
+        );
     }
 
     #[test]

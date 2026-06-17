@@ -10,6 +10,16 @@ AgentExecutor(
     ) | ChatPromptTemplate(
       input_variables=['input', 'system_prompt'],
       optional_variables=['agent_scratchpad', 'chat_history'],
+      input_types={
+        'chat_history': list[typing.Annotated[typing.Union[
+          typing.Annotated[langchain_core.messages.ai.AIMessage, Tag(tag='ai')],
+          typing.Annotated[langchain_core.messages.human.HumanMessage, Tag(tag='human')],
+        ], FieldInfo(annotation=NoneType, required=True, discriminator=Discriminator(discriminator=<function _get_type at 0x0000025FFE70A0E0>, custom_error_type=None))]],
+        'agent_scratchpad': list[typing.Annotated[typing.Union[
+          typing.Annotated[langchain_core.messages.tool.ToolMessage, Tag(tag='tool')],
+          typing.Annotated[langchain_core.messages.ai.AIMessageChunk, Tag(tag='AIMessageChunk')],
+        ], FieldInfo(annotation=NoneType, required=True)]],
+      },
       messages=[
         SystemMessagePromptTemplate(prompt=PromptTemplate(template='{system_prompt}')),
         MessagesPlaceholder(variable_name='chat_history', optional=True),
@@ -24,5 +34,20 @@ AgentExecutor(
     enabled: True,
     retry: None,
     function: <function _get_type at 0x0000025FFE70A0E0>,
+    cls: <class 'localgpt.io.schema.InputSchema'>,
+    coroutine: <function _patch_send_message_decorator.<locals>.async_wrapper at 0x0000025FB09E8550>,
+    tool_schema: {
+      'type': 'function',
+      'function': {
+        'name': 'Fwa-FAQ-Tool',
+        'description': '用于查询家庭宽带安装时遇到的各种问题',
+        'parameters': {
+          'properties': {
+            'search_query': {'default': '', 'description': '', 'type': 'string'},
+          },
+          'type': 'object',
+        },
+      },
+    },
   },
 )

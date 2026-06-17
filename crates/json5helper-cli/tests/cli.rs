@@ -123,10 +123,45 @@ fn converts_repr_file_as_compact_json() {
         value["agent"]["runnable"]["items"][1]["messages"][1]["variable_name"],
         "chat_history"
     );
+    let input_types = &value["agent"]["runnable"]["items"][1]["input_types"];
+    assert_eq!(input_types["chat_history"]["$type"], "list");
+    assert_eq!(
+        input_types["chat_history"]["$subscript"][0]["$type"],
+        "typing.Annotated"
+    );
+    assert_eq!(
+        input_types["chat_history"]["$subscript"][0]["$subscript"][0]["$type"],
+        "typing.Union"
+    );
+    assert_eq!(
+        input_types["chat_history"]["$subscript"][0]["$subscript"][0]["$subscript"][0]["$type"],
+        "typing.Annotated"
+    );
+    assert_eq!(
+        input_types["chat_history"]["$subscript"][0]["$subscript"][0]["$subscript"][0]["$subscript"]
+            [1]["tag"],
+        "ai"
+    );
+    assert_eq!(
+        input_types["chat_history"]["$subscript"][0]["$subscript"][1]["discriminator"]["discriminator"],
+        "<function _get_type at 0x0000025FFE70A0E0>"
+    );
     assert_eq!(value["callbacks"][0]["tag"], "debug");
     assert_eq!(
         value["metadata"]["function"],
         "<function _get_type at 0x0000025FFE70A0E0>"
+    );
+    assert_eq!(
+        value["metadata"]["cls"],
+        "<class 'localgpt.io.schema.InputSchema'>"
+    );
+    assert_eq!(
+        value["metadata"]["coroutine"],
+        "<function _patch_send_message_decorator.<locals>.async_wrapper at 0x0000025FB09E8550>"
+    );
+    assert_eq!(
+        value["metadata"]["tool_schema"]["function"]["parameters"]["properties"]["search_query"]["type"],
+        "string"
     );
 }
 
