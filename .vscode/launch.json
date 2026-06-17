@@ -2,7 +2,7 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Run Json5helper VS Code Extension",
+      "name": "Run ParseLens VS Code Extension",
       "type": "extensionHost",
       "request": "launch",
       "args": [
@@ -14,7 +14,7 @@
       "preLaunchTask": "vscode: build extension"
     },
     {
-      "name": "Run Json5helper VS Code Extension (Isolated)",
+      "name": "Run ParseLens VS Code Extension (Isolated)",
       "type": "extensionHost",
       "request": "launch",
       "args": [

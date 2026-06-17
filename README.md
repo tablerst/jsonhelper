@@ -1,27 +1,25 @@
-# json5helper
+# ParseLens
 
-`json5helper` is being migrated from an early Go prototype to a Rust workspace for parsing and formatting JSON-family configuration formats.
+ParseLens turns structured and semi-structured text into readable JSON previews.
 
-The Rust implementation currently targets:
+The current implementation covers:
 
 - JSON, JSONC, and JSON5 parsing into `serde_json::Value`
 - canonical or pretty JSON output
-- a CLI binary named `json5helper`
+- a CLI binary named `parselens`
 - a VS Code right-click preview extension
-- a separate diagnostic parser that converts Python `repr`-like object graphs into lossy JSON
+- a diagnostic parser that converts Python `repr`-like object graphs into lossy JSON
 - a WebAssembly wrapper for editor integration
-
-The previous Go implementation remains in the repository as historical reference under `internal/`, `pkg/`, `test/`, and `jsonhelper.go`.
 
 ## Workspace
 
 ```text
 crates/
-  json5helper-core/   # JSON, JSONC, JSON5 parse and format API
-  json5helper-cli/    # CLI binary
-  json5helper-wasm/   # WebAssembly wrapper for editor integration
-  repr-json/          # Python repr-like text to diagnostic JSON
-vscode/               # VS Code extension package
+  parselens-core/   # JSON, JSONC, JSON5 parse and format API
+  parselens-cli/    # CLI binary
+  parselens-wasm/   # WebAssembly wrapper for editor integration
+  parselens-repr/   # Python repr-like text to diagnostic JSON
+vscode/             # VS Code extension package
 ```
 
 ## Commands
@@ -35,19 +33,26 @@ cargo clippy --workspace --all-targets
 Parse and format JSON5:
 
 ```bash
-json5helper fmt --syntax json5 example.json5
+parselens fmt --syntax json5 example.json5
 ```
 
 Read from stdin:
 
 ```bash
-echo "{unquoted: 'value', trailing: [1, 2,]}" | json5helper fmt --syntax json5
+echo "{unquoted: 'value', trailing: [1, 2,]}" | parselens fmt --syntax json5
 ```
 
 Convert Python `repr`-like diagnostics:
 
 ```bash
-echo "AgentExecutor(verbose=True)" | json5helper repr-json
+echo "AgentExecutor(verbose=True)" | parselens repr-json
+```
+
+When running from source, use the CLI crate:
+
+```bash
+cargo run -p parselens-cli -- fmt --syntax json5 example.json5
+cargo run -p parselens-cli -- repr-json agent.repr
 ```
 
 ## VS Code Extension
@@ -59,15 +64,15 @@ mutates the source document.
 Use it from the editor context menu:
 
 1. Select text, or leave the cursor in a document to use the whole document.
-2. Right-click and choose `Json5helper: Parse Preview`.
+2. Right-click and choose `ParseLens: Parse Preview`.
 3. Pick `Preview as JSON`, `Preview as JSONC`, `Preview as JSON5`, or
    `Preview as Python repr` from the submenu.
 4. The result opens beside the current editor in a read-only JSON preview
    editor with normal VS Code folding and syntax highlighting.
 
-The command is also available from the Command Palette as
-mode-specific `Json5helper` preview commands, which is useful when checking
-whether the extension activated correctly.
+The command is also available from the Command Palette as mode-specific
+`ParseLens` preview commands, which is useful when checking whether the
+extension activated correctly.
 
 JSONC and JSON5 previews are intentionally lossy: comments, single quotes,
 unquoted keys, trailing commas, and other source-level syntax are converted into
@@ -82,11 +87,11 @@ npm run build
 ```
 
 From the repository root, use the VS Code launch configuration
-`Run Json5helper VS Code Extension` to build the extension and open an Extension
+`Run ParseLens VS Code Extension` to build the extension and open an Extension
 Development Host. This default launch keeps the normal extension-host
 environment so compatibility issues remain visible. If unrelated installed
 extensions pollute the logs or make debugging noisy, use
-`Run Json5helper VS Code Extension (Isolated)` instead; that profile disables
+`Run ParseLens VS Code Extension (Isolated)` instead; that profile disables
 other extensions and stores its temporary VS Code state under `.vscode-dev/`.
 
 `npm run build` compiles the Rust WebAssembly wrapper and the TypeScript
@@ -104,30 +109,32 @@ cd vscode
 npm run package
 ```
 
-This creates `vscode/json5helper-vscode.vsix`. Copy that file to the other PC
-and install it with VS Code's `Extensions: Install from VSIX...` command, or:
+This creates `vscode/parselens-vscode.vsix`. Install it with VS Code's
+`Extensions: Install from VSIX...` command, or:
 
 ```bash
-code --install-extension json5helper-vscode.vsix --force
+code --install-extension parselens-vscode.vsix --force
 ```
 
 For VS Code Insiders, use:
 
 ```bash
-code-insiders --install-extension json5helper-vscode.vsix --force
+code-insiders --install-extension parselens-vscode.vsix --force
 ```
 
-If the command only shows "Activating Extensions..." and no `Json5helper`
-output channel appears, close the old Extension Development Host or reload the
-target VS Code window. VS Code can keep running an older extension host after
-the extension is rebuilt.
+If the command only shows "Activating Extensions..." and no `ParseLens` output
+channel appears, close the old Extension Development Host or reload the target
+VS Code window. VS Code can keep running an older extension host after the
+extension is rebuilt.
 
 ## Coverage Goal
 
-The target for the Rust implementation is at least 80% line coverage. Use `cargo llvm-cov --workspace --fail-under-lines 80` once `cargo-llvm-cov` is installed.
+The target for the Rust implementation is at least 80% line coverage. Use
+`cargo llvm-cov --workspace --fail-under-lines 80` once `cargo-llvm-cov` is
+installed.
 
 ## WebAssembly
 
 The core crate keeps parsing logic independent from filesystem concerns. The
 current VS Code extension uses a bundled `wasm-bindgen` backend so users do not
-need Rust, the `json5helper` CLI, or `wasmtime` installed.
+need Rust, the `parselens` CLI, or `wasmtime` installed.

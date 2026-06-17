@@ -1,9 +1,12 @@
 # Core
 
-- Go module `github.com/tablerst/jsonhelper`; root package in `jsonhelper.go` re-exports `Parse`/`Encode` via `pkg/jsonutil`.
-- Public wrapper package: `pkg/jsonutil/`.
-- Implementation-only packages under `internal/`: `lexer`, `parser`, `encoder`, `utils`.
-- Current tests live in top-level `test/` package; no per-package test files yet in `internal/*` or `pkg/*`.
-- Docs: `README.md`, `README.zh.md`; current README text may display mojibake under default PowerShell reads, verify encoding before editing.
+- ParseLens is a Rust workspace for previewing JSON-family and repr-like diagnostic text as readable JSON.
+- Core crates:
+  - `crates/parselens-core/`: JSON, JSONC, and JSON5 parse/format API.
+  - `crates/parselens-repr/`: lossy Python `repr`-like text to diagnostic JSON.
+  - `crates/parselens-cli/`: `parselens` CLI binary.
+  - `crates/parselens-wasm/`: `wasm-bindgen` wrapper used by the editor integration.
+- VS Code extension package: `vscode/`.
+- Docs: `README.md`, `README.zh.md`, `vscode/README.md`, `AGENTS.md`.
 - Read for toolchain/commands: `mem:tech_stack`, `mem:suggested_commands`.
 - Read for style/task closeout: `mem:conventions`, `mem:task_completion`.

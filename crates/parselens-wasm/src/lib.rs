@@ -8,7 +8,7 @@ pub enum WasmSyntax {
     Json5,
 }
 
-impl From<WasmSyntax> for json5helper_core::Syntax {
+impl From<WasmSyntax> for parselens_core::Syntax {
     fn from(value: WasmSyntax) -> Self {
         match value {
             WasmSyntax::Json => Self::Json,
@@ -20,12 +20,12 @@ impl From<WasmSyntax> for json5helper_core::Syntax {
 
 #[wasm_bindgen]
 pub fn format_json(input: &str, syntax: WasmSyntax, pretty: bool) -> Result<String, String> {
-    json5helper_core::format(input, syntax.into(), pretty).map_err(|error| error.to_string())
+    parselens_core::format(input, syntax.into(), pretty).map_err(|error| error.to_string())
 }
 
 #[wasm_bindgen]
 pub fn repr_json(input: &str, pretty: bool) -> Result<String, String> {
-    let value = repr_json::parse_repr(input).map_err(|error| error.to_string())?;
+    let value = parselens_repr::parse_repr(input).map_err(|error| error.to_string())?;
     if pretty {
         serde_json::to_string_pretty(&value)
     } else {

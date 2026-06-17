@@ -1,6 +1,6 @@
 export type ParseMode = 'json' | 'jsonc' | 'json5' | 'repr';
 
-export interface Json5helperBackend {
+export interface ParseLensBackend {
   parsePreview(input: string, mode: ParseMode): Promise<string>;
 }
 
@@ -14,7 +14,7 @@ type WasmModule = {
   repr_json(input: string, pretty: boolean): string;
 };
 
-export class WasmJson5helperBackend implements Json5helperBackend {
+export class WasmParseLensBackend implements ParseLensBackend {
   private modulePromise: Promise<WasmModule> | undefined;
 
   public constructor(private readonly loadModule: () => Promise<WasmModule>) {

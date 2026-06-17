@@ -1,4 +1,4 @@
-import { Json5helperBackend, ParseMode } from './backend';
+import { ParseLensBackend, ParseMode } from './backend';
 
 export type ParsePreviewInput = {
   selection: string;
@@ -15,20 +15,20 @@ export type ParsePreviewServices = {
 
 export async function parsePreview(
   mode: ParseMode,
-  backend: Json5helperBackend,
+  backend: ParseLensBackend,
   services: ParsePreviewServices
 ): Promise<void> {
   const input = services.getInput();
   if (input === undefined) {
     services.logInfo?.(`${mode} parse preview skipped: no active editor`);
-    services.showError('Json5helper: open a document before parsing.');
+    services.showError('ParseLens: open a document before parsing.');
     return;
   }
 
   const source = getSelectedTextOrDocument(input);
   if (source.length === 0) {
     services.logInfo?.(`${mode} parse preview skipped: empty source`);
-    services.showError('Json5helper: selected text or document is empty.');
+    services.showError('ParseLens: selected text or document is empty.');
     return;
   }
 
@@ -44,7 +44,7 @@ export async function parsePreview(
   } catch (error) {
     const message = errorToLogMessage(error);
     services.logError(`${mode} parse preview failed`, message);
-    services.showError('Json5helper: parse preview failed. See output for details.');
+    services.showError('ParseLens: parse preview failed. See output for details.');
   }
 }
 

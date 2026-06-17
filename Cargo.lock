@@ -145,37 +145,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "json5helper-cli"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "clap",
- "json5helper-core",
- "repr-json",
- "serde_json",
-]
-
-[[package]]
-name = "json5helper-core"
-version = "0.1.0"
-dependencies = [
- "json5",
- "jsonc-parser",
- "serde_json",
- "thiserror",
-]
-
-[[package]]
-name = "json5helper-wasm"
-version = "0.1.0"
-dependencies = [
- "json5helper-core",
- "repr-json",
- "serde_json",
- "wasm-bindgen",
-]
-
-[[package]]
 name = "jsonc-parser"
 version = "0.32.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -204,6 +173,45 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "384b8ab6d37215f3c5301a95a4accb5d64aa607f1fcb26a11b5303878451b4fe"
 
 [[package]]
+name = "parselens-cli"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "clap",
+ "parselens-core",
+ "parselens-repr",
+ "serde_json",
+]
+
+[[package]]
+name = "parselens-core"
+version = "0.1.0"
+dependencies = [
+ "json5",
+ "jsonc-parser",
+ "serde_json",
+ "thiserror",
+]
+
+[[package]]
+name = "parselens-repr"
+version = "0.1.0"
+dependencies = [
+ "serde_json",
+ "thiserror",
+]
+
+[[package]]
+name = "parselens-wasm"
+version = "0.1.0"
+dependencies = [
+ "parselens-core",
+ "parselens-repr",
+ "serde_json",
+ "wasm-bindgen",
+]
+
+[[package]]
 name = "proc-macro2"
 version = "1.0.106"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -219,14 +227,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "41f2619966050689382d2b44f664f4bc593e129785a36d6ee376ddf37259b924"
 dependencies = [
  "proc-macro2",
-]
-
-[[package]]
-name = "repr-json"
-version = "0.1.0"
-dependencies = [
- "serde_json",
- "thiserror",
 ]
 
 [[package]]

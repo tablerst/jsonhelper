@@ -1,4 +1,4 @@
-declare module '*json5helper_wasm.js' {
+declare module '*parselens_wasm.js' {
   export enum WasmSyntax {
     Json = 0,
     Jsonc = 1,

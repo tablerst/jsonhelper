@@ -1,10 +1,12 @@
 [package]
-name = "repr-json"
-version = "0.1.0"
+name = "parselens-core"
+version.workspace = true
 edition.workspace = true
 license.workspace = true
 repository.workspace = true
 
 [dependencies]
+json5.workspace = true
+jsonc-parser.workspace = true
 serde_json.workspace = true
 thiserror.workspace = true

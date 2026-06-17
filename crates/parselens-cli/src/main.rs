@@ -4,11 +4,11 @@ use std::path::PathBuf;
 
 use anyhow::{Context, Result, bail};
 use clap::{Parser, Subcommand, ValueEnum};
-use json5helper_core::Syntax;
+use parselens_core::Syntax;
 
 #[derive(Debug, Parser)]
-#[command(name = "json5helper")]
-#[command(about = "Parse and format JSON, JSONC, JSON5, and Python repr-like diagnostics.")]
+#[command(name = "parselens")]
+#[command(about = "Preview and format JSON, JSONC, JSON5, and Python repr-like diagnostics.")]
 struct Cli {
     #[command(subcommand)]
     command: Command,
@@ -85,11 +85,11 @@ fn run_repr(command: ReprCommand) -> Result<()> {
 }
 
 fn format_json_text(input: &str, syntax: CliSyntax, compact: bool) -> Result<String> {
-    Ok(json5helper_core::format(input, syntax.into(), !compact)?)
+    Ok(parselens_core::format(input, syntax.into(), !compact)?)
 }
 
 fn format_repr_text(input: &str, compact: bool) -> Result<String> {
-    let value = repr_json::parse_repr(input)?;
+    let value = parselens_repr::parse_repr(input)?;
     Ok(if compact {
         serde_json::to_string(&value)?
     } else {

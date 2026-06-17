@@ -1,17 +1,17 @@
 [package]
-name = "json5helper-cli"
-version = "0.1.0"
+name = "parselens-cli"
+version.workspace = true
 edition.workspace = true
 license.workspace = true
 repository.workspace = true
 
 [[bin]]
-name = "json5helper"
+name = "parselens"
 path = "src/main.rs"
 
 [dependencies]
 anyhow.workspace = true
 clap.workspace = true
-json5helper-core = { path = "../json5helper-core" }
-repr-json = { path = "../repr-json" }
+parselens-core = { path = "../parselens-core" }
+parselens-repr = { path = "../parselens-repr" }
 serde_json.workspace = true

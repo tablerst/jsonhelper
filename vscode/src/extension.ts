@@ -1,7 +1,7 @@
 import * as path from 'path';
 import * as vscode from 'vscode';
 
-import { Json5helperBackend, ParseMode, WasmJson5helperBackend } from './backend';
+import { ParseLensBackend, ParseMode, WasmParseLensBackend } from './backend';
 import { ParsePreviewInput, ParsePreviewServices, parsePreview } from './previewFlow';
 
 type ParseCommand = {
@@ -12,22 +12,22 @@ type ParseCommand = {
 
 const parseCommands: ReadonlyArray<ParseCommand> = [
   {
-    command: 'json5helper.previewJson',
+    command: 'parselens.previewJson',
     label: 'Preview as JSON',
     mode: 'json'
   },
   {
-    command: 'json5helper.previewJsonc',
+    command: 'parselens.previewJsonc',
     label: 'Preview as JSONC',
     mode: 'jsonc'
   },
   {
-    command: 'json5helper.previewJson5',
+    command: 'parselens.previewJson5',
     label: 'Preview as JSON5',
     mode: 'json5'
   },
   {
-    command: 'json5helper.previewRepr',
+    command: 'parselens.previewRepr',
     label: 'Preview as Python repr',
     mode: 'repr'
   }
@@ -37,11 +37,11 @@ let outputChannel: vscode.LogOutputChannel | undefined;
 let extensionLogger: ExtensionLogger | undefined;
 
 export function activate(context: vscode.ExtensionContext): void {
-  outputChannel = vscode.window.createOutputChannel('Json5helper', { log: true }) as vscode.LogOutputChannel;
+  outputChannel = vscode.window.createOutputChannel('ParseLens', { log: true }) as vscode.LogOutputChannel;
   extensionLogger = new ExtensionLogger(outputChannel, context.logUri);
   context.subscriptions.push(extensionLogger);
 
-  extensionLogger.info('Json5helper extension activating');
+  extensionLogger.info('ParseLens extension activating');
   extensionLogger.info(`extensionPath=${context.extensionPath}`);
   extensionLogger.info(`extensionUri=${context.extensionUri.toString()}`);
   extensionLogger.info(`logUri=${context.logUri.toString()}`);
@@ -64,20 +64,20 @@ export function activate(context: vscode.ExtensionContext): void {
         } catch (error) {
           extensionLogger?.error(`${command.label} command failed unexpectedly`, error);
           extensionLogger?.show();
-          void vscode.window.showErrorMessage('Json5helper: command failed unexpectedly. See output for details.');
+          void vscode.window.showErrorMessage('ParseLens: command failed unexpectedly. See output for details.');
         }
       })
     );
   }
 
   context.subscriptions.push(
-    vscode.commands.registerCommand('json5helper.openDiagnosticLog', async () => {
+    vscode.commands.registerCommand('parselens.openDiagnosticLog', async () => {
       extensionLogger?.info('Open Diagnostic Log command invoked');
       await extensionLogger?.openLogDocument();
     })
   );
 
-  extensionLogger.info('Json5helper extension activated');
+  extensionLogger.info('ParseLens extension activated');
 }
 
 export function deactivate(): void {
@@ -87,8 +87,8 @@ export function deactivate(): void {
   extensionLogger = undefined;
 }
 
-function createBackend(context: vscode.ExtensionContext): Json5helperBackend {
-  return new WasmJson5helperBackend(async () => {
+function createBackend(context: vscode.ExtensionContext): ParseLensBackend {
+  return new WasmParseLensBackend(async () => {
     const wasmModulePath = getWasmModulePath(context);
     extensionLogger?.info(`Loading WASM module from ${wasmModulePath}`);
     const wasm = require(wasmModulePath);
@@ -98,7 +98,7 @@ function createBackend(context: vscode.ExtensionContext): Json5helperBackend {
 }
 
 function getWasmModulePath(context: vscode.ExtensionContext): string {
-  return path.join(context.extensionPath, 'wasm', 'json5helper_wasm.js');
+  return path.join(context.extensionPath, 'wasm', 'parselens_wasm.js');
 }
 
 function createVsCodeParsePreviewServices(
@@ -177,10 +177,10 @@ class JsonPreviewController implements vscode.Disposable {
 }
 
 class JsonPreviewDocumentProvider implements vscode.TextDocumentContentProvider, vscode.Disposable {
-  public static readonly scheme = 'json5helper-preview';
+  public static readonly scheme = 'parselens-preview';
   private static readonly uri = vscode.Uri.from({
     scheme: JsonPreviewDocumentProvider.scheme,
-    path: '/Json5helper Preview.json'
+    path: '/ParseLens Preview.json'
   });
 
   private content = '';
@@ -226,7 +226,7 @@ class ExtensionLogger implements vscode.Disposable {
     private readonly channel: vscode.LogOutputChannel,
     logUri: vscode.Uri
   ) {
-    this.logFile = vscode.Uri.joinPath(logUri, 'json5helper.log');
+    this.logFile = vscode.Uri.joinPath(logUri, 'parselens.log');
   }
 
   public info(message: string): void {
@@ -263,10 +263,10 @@ class ExtensionLogger implements vscode.Disposable {
     const entry = `[${timestamp}] [${level}] ${message}`;
     if (level === 'error') {
       this.channel.error(message);
-      console.error(`[Json5helper] ${message}`);
+      console.error(`[ParseLens] ${message}`);
     } else {
       this.channel.info(message);
-      console.log(`[Json5helper] ${message}`);
+      console.log(`[ParseLens] ${message}`);
     }
 
     this.writeQueue = this.writeQueue
@@ -279,7 +279,7 @@ class ExtensionLogger implements vscode.Disposable {
       .catch((error: unknown) => {
         const fallback = this.errorToLogMessage(error);
         this.channel.error(`Failed to write diagnostic log: ${fallback}`);
-        console.error(`[Json5helper] Failed to write diagnostic log: ${fallback}`);
+        console.error(`[ParseLens] Failed to write diagnostic log: ${fallback}`);
       });
   }
 

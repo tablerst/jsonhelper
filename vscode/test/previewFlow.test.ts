@@ -7,9 +7,9 @@ import {
   getSelectedTextOrDocument,
   parsePreview
 } from '../src/previewFlow';
-import { Json5helperBackend, ParseMode } from '../src/backend';
+import { ParseLensBackend, ParseMode } from '../src/backend';
 
-class RecordingBackend implements Json5helperBackend {
+class RecordingBackend implements ParseLensBackend {
   public calls: Array<{ input: string; mode: ParseMode }> = [];
   public result = '{"ok":true}';
   public error: Error | undefined;
@@ -93,7 +93,7 @@ async function run(): Promise<void> {
   await parsePreview('json5', failingBackend, failingServices);
 
   assert.deepEqual(failingServices.previews, []);
-  assert.equal(failingServices.errors[0], 'Json5helper: parse preview failed. See output for details.');
+  assert.equal(failingServices.errors[0], 'ParseLens: parse preview failed. See output for details.');
   const failureLog = failingServices.logs.find((entry) => entry.title === 'json5 parse preview failed');
   assert.ok(failureLog);
   assert.match(failureLog.message, /bad syntax/);
@@ -104,7 +104,7 @@ async function run(): Promise<void> {
   await parsePreview('repr', emptyBackend, emptyServices);
 
   assert.deepEqual(emptyBackend.calls, []);
-  assert.equal(emptyServices.errors[0], 'Json5helper: selected text or document is empty.');
+  assert.equal(emptyServices.errors[0], 'ParseLens: selected text or document is empty.');
 }
 
 run().catch((error: unknown) => {

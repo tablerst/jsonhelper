@@ -1,7 +1,9 @@
 # Task Completion
 
-- Run `gofmt -w` on any changed Go files.
-- Run `go test ./...` for normal code changes.
-- Run `go vet ./...` when behavior or package structure changes.
-- For parser/lexer/encoder changes, consider `go test ./... -cover` and add focused JSON5/JSONC edge-case tests.
+- Run `cargo fmt --all -- --check` after Rust edits.
+- Run `cargo test --workspace` for normal code changes.
+- Run `cargo clippy --workspace --all-targets` when behavior or public API changes.
+- Run `cd vscode; npm test` after TypeScript extension edits.
+- Run `cd vscode; npm run package` when WASM, extension metadata, or VSIX packaging changes.
+- For parser changes, add focused JSON5/JSONC/repr fixture or unit coverage and assert diagnostic JSON shape.
 - Check `git status --short --untracked-files=all` before final response; do not touch unrelated user changes.

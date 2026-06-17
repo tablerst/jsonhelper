@@ -5,7 +5,7 @@ use std::process::{Command, Stdio};
 use serde_json::Value;
 
 fn bin() -> PathBuf {
-    PathBuf::from(env!("CARGO_BIN_EXE_json5helper"))
+    PathBuf::from(env!("CARGO_BIN_EXE_parselens"))
 }
 
 fn fixture(name: &str) -> PathBuf {
@@ -19,7 +19,7 @@ fn run(args: &[&str]) -> (bool, String, String) {
     let output = Command::new(bin())
         .args(args)
         .output()
-        .expect("failed to run json5helper");
+        .expect("failed to run parselens");
 
     (
         output.status.success(),
@@ -35,7 +35,7 @@ fn run_with_stdin(args: &[&str], stdin: &str) -> (bool, String, String) {
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
         .spawn()
-        .expect("failed to spawn json5helper");
+        .expect("failed to spawn parselens");
 
     child
         .stdin
@@ -84,7 +84,7 @@ fn formats_jsonc_file_as_pretty_json() {
     assert_eq!(value["settings"]["threshold"], 3.5);
     assert_eq!(
         value["settings"]["paths"][1],
-        "crates/json5helper-core/src/lib.rs"
+        "crates/parselens-core/src/lib.rs"
     );
     assert_eq!(value["items"][0]["tags"][1], "jsonc");
 }

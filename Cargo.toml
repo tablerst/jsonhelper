@@ -1,16 +1,17 @@
 [workspace]
 resolver = "3"
 members = [
-  "crates/json5helper-core",
-  "crates/json5helper-cli",
-  "crates/json5helper-wasm",
-  "crates/repr-json",
+  "crates/parselens-core",
+  "crates/parselens-cli",
+  "crates/parselens-wasm",
+  "crates/parselens-repr",
 ]
 
 [workspace.package]
+version = "0.1.0"
 edition = "2024"
 license = "MIT"
-repository = "https://github.com/tablerst/jsonhelper"
+repository = "https://github.com/tablerst/ParseLens"
 
 [workspace.dependencies]
 anyhow = "1.0.100"

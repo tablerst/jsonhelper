@@ -1,13 +1,13 @@
 {
-  "name": "json5helper-vscode",
-  "displayName": "Json5helper",
+  "name": "parselens-vscode",
+  "displayName": "ParseLens",
   "description": "Preview JSON, JSONC, JSON5, and Python repr-like diagnostics as canonical JSON.",
-  "version": "0.1.1",
+  "version": "0.1.0",
   "publisher": "tablerst",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/tablerst/jsonhelper.git",
+    "url": "https://github.com/tablerst/ParseLens.git",
     "directory": "vscode"
   },
   "engines": {
@@ -18,69 +18,69 @@
   ],
   "activationEvents": [
     "onStartupFinished",
-    "onCommand:json5helper.previewJson",
-    "onCommand:json5helper.previewJsonc",
-    "onCommand:json5helper.previewJson5",
-    "onCommand:json5helper.previewRepr",
-    "onCommand:json5helper.openDiagnosticLog"
+    "onCommand:parselens.previewJson",
+    "onCommand:parselens.previewJsonc",
+    "onCommand:parselens.previewJson5",
+    "onCommand:parselens.previewRepr",
+    "onCommand:parselens.openDiagnosticLog"
   ],
   "main": "./dist/src/extension.js",
   "contributes": {
     "commands": [
       {
-        "command": "json5helper.previewJson",
+        "command": "parselens.previewJson",
         "title": "Preview as JSON",
-        "category": "Json5helper"
+        "category": "ParseLens"
       },
       {
-        "command": "json5helper.previewJsonc",
+        "command": "parselens.previewJsonc",
         "title": "Preview as JSONC",
-        "category": "Json5helper"
+        "category": "ParseLens"
       },
       {
-        "command": "json5helper.previewJson5",
+        "command": "parselens.previewJson5",
         "title": "Preview as JSON5",
-        "category": "Json5helper"
+        "category": "ParseLens"
       },
       {
-        "command": "json5helper.previewRepr",
+        "command": "parselens.previewRepr",
         "title": "Preview as Python repr",
-        "category": "Json5helper"
+        "category": "ParseLens"
       },
       {
-        "command": "json5helper.openDiagnosticLog",
+        "command": "parselens.openDiagnosticLog",
         "title": "Open Diagnostic Log",
-        "category": "Json5helper"
+        "category": "ParseLens"
       }
     ],
     "submenus": [
       {
-        "id": "json5helper.parsePreviewMenu",
-        "label": "Json5helper: Parse Preview"
+        "id": "parselens.parsePreviewMenu",
+        "label": "ParseLens: Parse Preview"
       }
     ],
     "menus": {
       "editor/context": [
         {
-          "submenu": "json5helper.parsePreviewMenu",
+          "submenu": "parselens.parsePreviewMenu",
           "group": "navigation@90"
         }
       ],
-      "json5helper.parsePreviewMenu": [
+      "parselens.parsePreviewMenu": [
         {
-          "command": "json5helper.previewJson",
+          "command": "parselens.previewJson",
           "group": "1_parse@10"
         },
         {
-          "command": "json5helper.previewJsonc",
+          "command": "parselens.previewJsonc",
           "group": "1_parse@20"
         },
         {
-          "command": "json5helper.previewJson5",
+          "command": "parselens.previewJson5",
           "group": "1_parse@30"
         },
         {
-          "command": "json5helper.previewRepr",
+          "command": "parselens.previewRepr",
           "group": "2_diag@10"
         }
       ]
@@ -92,12 +92,12 @@
     "test": "npm run compile && node ./dist/test/previewFlow.test.js",
     "clean:dist": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\"",
     "clean:wasm": "node -e \"require('fs').rmSync('wasm',{recursive:true,force:true})\"",
-    "build:wasm": "npm run clean:wasm && cargo build -p json5helper-wasm --target wasm32-unknown-unknown --release && wasm-bindgen ../target/wasm32-unknown-unknown/release/json5helper_wasm.wasm --target nodejs --out-dir ./wasm --out-name json5helper_wasm",
+    "build:wasm": "npm run clean:wasm && cargo build -p parselens-wasm --target wasm32-unknown-unknown --release && wasm-bindgen ../target/wasm32-unknown-unknown/release/parselens_wasm.wasm --target nodejs --out-dir ./wasm --out-name parselens_wasm",
     "build": "npm run build:wasm && npm run clean:dist && npm run compile",
     "vscode:prepublish": "npm run build",
-    "package": "vsce package --out json5helper-vscode.vsix",
-    "install:local": "code --install-extension json5helper-vscode.vsix --force",
-    "install:local:insiders": "code-insiders --install-extension json5helper-vscode.vsix --force"
+    "package": "vsce package --out parselens-vscode.vsix",
+    "install:local": "code --install-extension parselens-vscode.vsix --force",
+    "install:local:insiders": "code-insiders --install-extension parselens-vscode.vsix --force"
   },
   "dependencies": {},
   "devDependencies": {

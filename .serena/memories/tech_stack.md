@@ -1,8 +1,8 @@
 # Tech Stack
 
-- Language: Go.
-- Module path: `github.com/tablerst/jsonhelper`.
-- `go.mod` currently pins `go 1.23.1`.
-- No third-party module dependencies currently; `go.sum` is empty.
-- Standard Go tooling only; no Makefile, task runner, linter config, or CI config observed.
-- Serena semantic tools require `gopls`; current environment lacked `gopls` during onboarding, so direct shell inspection was used.
+- Main language: Rust 2024 workspace.
+- Crates: `parselens-core`, `parselens-repr`, `parselens-cli`, `parselens-wasm`.
+- CLI binary: `parselens`.
+- Editor integration: VS Code extension in `vscode/`, written in TypeScript and backed by a bundled `wasm-bindgen` module.
+- Repository URL: `https://github.com/tablerst/ParseLens.git`.
+- Use Cargo for Rust build/test/lint and npm scripts under `vscode/` for extension build/test/package.

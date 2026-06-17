@@ -6,7 +6,7 @@
     "threshold": 3.5,
     "paths": [
       "src/main.rs",
-      "crates/json5helper-core/src/lib.rs",
+      "crates/parselens-core/src/lib.rs",
     ],
   },
   "items": [

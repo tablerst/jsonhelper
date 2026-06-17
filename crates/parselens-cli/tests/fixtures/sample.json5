@@ -2,7 +2,7 @@
   // JSON5 baseline: comments, unquoted keys, single quotes, trailing commas,
   // hex numbers, explicit plus signs, decimals, escapes, and nested values.
   metadata: {
-    name: 'json5helper',
+    name: 'parselens',
     enabled: true,
     version: +1,
     hexadecimal: 0xdecaf,
