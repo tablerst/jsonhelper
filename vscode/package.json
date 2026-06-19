@@ -3,7 +3,7 @@
   "displayName": "ParseLens",
   "description": "Preview JSON, JSONC, JSON5, and Python repr-like diagnostics as canonical JSON.",
   "version": "0.1.0",
-  "publisher": "tablerst",
+  "publisher": "tomorasd",
   "license": "MIT",
   "icon": "assets/icon.png",
   "keywords": [
